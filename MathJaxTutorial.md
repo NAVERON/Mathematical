@@ -162,7 +162,10 @@ $$
 
 # 符号
 
-有一个识别手写符号的网站，知乎上使用过，查阅后挂上超链接
+有一个识别手写符号的网站
+[Anyone who works with LaTeX knows how time-consuming it can be to find a symbol in [symbols-a4.pdf][1] that you just can't memorize, Detexify is an attempt to simplify this search](http://detexify.kirelabs.org/classify.html)
+
+[1] : http://www.ctan.org/tex-archive/info/symbols/comprehensive/
 
 # 分段函数
 
