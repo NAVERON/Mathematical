@@ -4,6 +4,9 @@
 
 import numpy as np
 import pyglet
+import random
+from math import sin, cos, atan2, pi, hypot
+from MoFan.Demo.Part5.Bot import Bot
 
 
 class ArmEnv(object):
@@ -11,6 +14,11 @@ class ArmEnv(object):
     dt = .1    # refresh rate  刷新率   转动的速度和dt有关
     action_bound = [-1, 1]
     goal = {'x': 100., 'y': 100., 'l': 40}  #目标地点
+    state_dim = 9  #状态维度  观测值
+    action_dim = 2  #动作维度
+    ##########################################################
+    viewer = None
+    dt = .1
     state_dim = 9  #状态维度  观测值
     action_dim = 2  #动作维度
 
@@ -21,6 +29,17 @@ class ArmEnv(object):
         self.arm_info['l'] = 100        # 2 arms length
         self.arm_info['r'] = np.pi/6    # 2 angles information  30 degree
         self.on_goal = 0   #判断手臂端口  在蓝色目标快停留了多长时间
+        #########################################################################
+        #  初始化界面避碰信息
+        self.player_info = Bot(random.random() * 5 + 0.1, random.random() * 2 * pi)
+        self.on_goal = 0
+        
+        self.bots = []
+        for _ in range(random.random() * 20 + 1):
+            position = (random.random() * 200, random.random() * 200)
+            bot = Bot(position, random.random() * 5 + 0.1, random.random() * 2 * pi)
+            self.bots.append(bot)
+        
 
     def step(self, action):    #action是一个二维数组，表示手臂的旋转角度 =========================================================
         done = False
@@ -37,7 +56,7 @@ class ArmEnv(object):
         dist1 = [(self.goal['x'] - a1xy_[0]) / 400, (self.goal['y'] - a1xy_[1]) / 400]
         dist2 = [(self.goal['x'] - finger[0]) / 400, (self.goal['y'] - finger[1]) / 400]
         r = -np.sqrt(dist2[0]**2+dist2[1]**2)    #这个可以表示第二根手臂的长度计算值
-
+        
         # done and reward
         if self.goal['x'] - self.goal['l']/2 < finger[0] < self.goal['x'] + self.goal['l']/2:
             if self.goal['y'] - self.goal['l']/2 < finger[1] < self.goal['y'] + self.goal['l']/2:
@@ -51,6 +70,14 @@ class ArmEnv(object):
         # state   状态标记是与动作相关的状态
         s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))    #状态记录
         return s, r, done    #done表示本次回合是否结束
+        
+        ################################################################################
+        done = False
+        action = np.clip(action, *self.action_bound)
+        
+    
+    
+    
 
     def reset(self):
         self.arm_info['r'] = 2 * np.pi * np.random.rand(2)   #随机生成两个手臂的角度
@@ -81,7 +108,7 @@ class ArmEnv(object):
 class Viewer(pyglet.window.Window):
     bar_thc = 5  #手臂的宽度
 
-    def __init__(self, arm_info, goal):  #画出手臂
+    def __init__(self, arm_info, player_info, goal):  #画出手臂
         # vsync=False to not use the monitor FPS, we can speed up training
         super(Viewer, self).__init__(width=400, height=400, resizable=False, caption='Arm', vsync=False)
         pyglet.gl.glClearColor(1, 1, 1, 1)  #背景颜色
@@ -111,6 +138,37 @@ class Viewer(pyglet.window.Window):
                      200, 160,
                      200, 150]), 
             ('c3B', (249, 86, 86) * 4,))
+        
+        ##################################################################################
+        #  自己修改的地方
+        super(Viewer, self).__init__(width=400, height=400, resizable=False, caption='Arm', vsync=False)
+        pyglet.gl.glClearColor(1, 1, 1, 1)  #背景颜色
+        self.player_info = player_info
+        self.batch = pyglet.graphics.Batch()
+        
+        self.goal = self.batch.add(
+                4, pyglet.gl.GL_QUADS, None,    # 4 corners
+                ('v2f', [goal['x'] - goal['l'] / 2, goal['y'] - goal['l'] / 2,
+                         goal['x'] - goal['l'] / 2, goal['y'] + goal['l'] / 2,
+                         goal['x'] + goal['l'] / 2, goal['y'] + goal['l'] / 2,
+                         goal['x'] + goal['l'] / 2, goal['y'] - goal['l'] / 2]),
+                ('c3B', (86, 109, 249) * 4)
+            )    # color
+        self.arm1 = self.batch.add(
+            4, pyglet.gl.GL_QUADS, None,
+            ('v2f', [250, 250,                # location
+                     250, 300,
+                     260, 300,
+                     260, 250]),
+            ('c3B', (249, 86, 86) * 4,))    # color
+        self.arm2 = self.batch.add(
+            4, pyglet.gl.GL_QUADS, None,
+            ('v2f', [100, 150,              # location
+                     100, 160,
+                     200, 160,
+                     200, 150]), 
+            ('c3B', (249, 86, 86) * 4,))
+        
 
     def render(self):  #刷新并呈现在屏幕上
         self._update_arm()
@@ -143,6 +201,9 @@ class Viewer(pyglet.window.Window):
 
         self.arm1.vertices = np.concatenate((xy01, xy02, xy11, xy12))  #更新矩形的信息
         self.arm2.vertices = np.concatenate((xy11_, xy12_, xy21, xy22))
+        ###########################################################################
+        # 更新界面上所有障碍物，更新player的属性
+        (speed, course) = self.player_info
 
 
 if __name__ == '__main__':
