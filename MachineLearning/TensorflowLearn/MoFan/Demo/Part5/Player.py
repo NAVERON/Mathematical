@@ -1,14 +1,13 @@
 
 
-
 from collections import deque
 from math import sin, cos, atan2, pi, hypot
 import random
 
 
-class Bot(object):
-    
-    def __init__(self, position, speed = 0.5, direction = 0 * pi):  #设置初始位置和目的地   direction弧度表示和存储
+class Player(object):
+
+    def __init__(self, position, speed = 0.5, direction = 0 * pi):  #设置初始位置和目的地
         
         self.position = position
         self.speed = speed  #小球运动速度设置，应当设置成变量
@@ -35,40 +34,27 @@ class Bot(object):
         px %= 400
         py %= 400
         self.direction %= 2 * pi
-        
         #  前进并计入历史轨迹
         self.position = (px + cos(self.direction) * self.speed, py + sin(self.direction) * self.speed)
+        
         if random.random() > 0.7:
             self.history.append(self.position)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
+    def reset(self):
+        # self.position = (random.random() * 400, random.random() * 400)
+        self.speed = random.random() * 5 + 1
+        self.direction = random.random() * 2 * pi
+        
+        self.target = (random.random() * 400, random.random() * 400)
+        self.history = deque(maxlen = 64) #历史轨迹点
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

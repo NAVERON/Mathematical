@@ -35,7 +35,7 @@ def train():
             a = rl.choose_action(s)  #根据当前状态选择一个动作
 
             s_, r, done = env.step(a)  #根据动作更新环境，更新界面的图形    返回更新后的    状态和奖励值，done代表是否到达了目标点，完成任务
-
+            # print(a[0], " , ", a[1])  # [-0.07847165 -0.33180785]
             rl.store_transition(s, a, r, s_)
 
             ep_r += r
@@ -46,6 +46,7 @@ def train():
             s = s_
             if done or j == MAX_EP_STEPS-1:
                 print('Ep: %i | %s | ep_r: %.1f | step: %i' % (i, '---' if not done else 'done', ep_r, j))
+                # print(env.arm_info)  # [(100., 2.6605449) (100., 4.790004 )]
                 break
     rl.save()
 
