@@ -20,7 +20,8 @@ class ArmEnv(object):
     viewer = None
     dt = .1
     state_dim = 9  #状态维度  观测值
-    action_dim = 2  #动作维度
+    action_dim = 2  #动作维度     ------- 例子中是两个手臂的角度，这里是速度大小和方向
+    goal = {"x" : 400, "y" : 50}
 
     def __init__(self):  #初始化基础数据
         self.arm_info = np.zeros(    # 2 行  2 列
@@ -31,7 +32,7 @@ class ArmEnv(object):
         self.on_goal = 0   #判断手臂端口  在蓝色目标快停留了多长时间
         #########################################################################
         #  初始化界面避碰信息
-        self.player_info = Bot(random.random() * 5 + 0.1, random.random() * 2 * pi)
+        self.player = Bot(random.random() * 5 + 0.1, random.random() * 2 * pi)
         self.on_goal = 0
         
         self.bots = []
@@ -39,6 +40,7 @@ class ArmEnv(object):
             position = (random.random() * 200, random.random() * 200)
             bot = Bot(position, random.random() * 5 + 0.1, random.random() * 2 * pi)
             self.bots.append(bot)
+        
         
 
     def step(self, action):    #action是一个二维数组，表示手臂的旋转角度 =========================================================
@@ -93,6 +95,12 @@ class ArmEnv(object):
         # state
         s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))
         return s    #  返回状态
+        ##############################################################################
+        #
+        
+        
+        
+        
 
     def render(self):
         if self.viewer is None:
