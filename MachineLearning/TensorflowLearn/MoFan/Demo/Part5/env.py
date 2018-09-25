@@ -20,10 +20,10 @@ class ArmEnv(object):
     ##########################################################
     viewer = None
     dt = .1
-    action_bound = [-1, 1]
+    action_bound = [0, 2 * pi]
     state_dim = 9  #状态维度  观测值
     action_dim = 2  #动作维度     ------- 例子中是两个手臂的角度，这里是速度大小和方向
-    # goal = {"x" : 400, "y" : 50}
+    goal = {"x" : 400, "y" : 50}
     
     def __init__(self):  #初始化基础数据
         self.arm_info = np.zeros(    # 2 行  2 列
@@ -41,9 +41,8 @@ class ArmEnv(object):
             bot = Bot(position, random.random() * 5 + 0.1, random.random() * 2 * pi)
             self.bots.append(bot)
         
-        self.goal = {"x" : 400, "y" : 50}
+        # self.goal = {"x" : 400, "y" : 50}
         self.on_goal = 0
-        
         
 
     def step(self, action):    #action是一个二维数组，表示手臂的旋转角度 =========================================================
@@ -184,7 +183,28 @@ class Viewer(pyglet.window.Window):
         #pyglet.gl.glClearColor(1, 1, 1, 1)  #背景颜色
         self.player = player
         self.batch = pyglet.graphics.Batch()
-        
+        self.goal = self.batch.add(
+                4, pyglet.gl.GL_QUADS, None,    # 4 corners
+                ('v2f', [goal['x'] - 40 / 2, goal['y'] - 40 / 2,                # location
+                         goal['x'] - 40 / 2, goal['y'] + 40 / 2,
+                         goal['x'] + 40 / 2, goal['y'] + 40 / 2,
+                         goal['x'] + 40 / 2, goal['y'] - 40 / 2]),
+                ('c3B', (86, 109, 249) * 4)
+            )
+        self.arm1 = self.batch.add(
+            4, pyglet.gl.GL_QUADS, None,
+            ('v2f', [250, 250,                # location
+                     250, 300,
+                     260, 300,
+                     260, 250]),
+            ('c3B', (249, 86, 86) * 4,))    # color
+        self.arm2 = self.batch.add(
+            4, pyglet.gl.GL_QUADS, None,
+            ('v2f', [100, 150,              # location
+                     100, 160,
+                     200, 160,
+                     200, 150]), 
+            ('c3B', (249, 86, 86) * 4,))
         
         
 
