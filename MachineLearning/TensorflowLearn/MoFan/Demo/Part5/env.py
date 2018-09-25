@@ -1,8 +1,3 @@
-'''
-Created on 2018年9月22日
-
-@author: ERON
-'''
 
 
 
@@ -53,7 +48,7 @@ class ArmEnv(object):
         else:
             self.on_goal = 0
 
-        # state
+        # state   状态标记是与动作相关的状态
         s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))    #状态记录
         return s, r, done    #done表示本次回合是否结束
 
@@ -79,6 +74,8 @@ class ArmEnv(object):
 
     def sample_action(self):
         return np.random.rand(2)-0.5    # two radians   范围在-0.5 - 0.5之间
+        
+        return np.random.rand(2)
 
 
 class Viewer(pyglet.window.Window):

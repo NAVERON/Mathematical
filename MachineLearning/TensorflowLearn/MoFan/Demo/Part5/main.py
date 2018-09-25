@@ -1,8 +1,4 @@
-'''
-Created on 2018年9月22日
 
-@author: ERON
-'''
 
 """
 Make it more robust.
@@ -22,7 +18,7 @@ ON_TRAIN = True
 env = ArmEnv()
 s_dim = env.state_dim
 a_dim = env.action_dim
-a_bound = env.action_bound
+a_bound = env.action_bound   #动作边界
 
 # set RL method (continuous)
 rl = DDPG(a_dim, s_dim, a_bound)
@@ -31,14 +27,14 @@ steps = []
 def train():
     # start training
     for i in range(MAX_EPISODES):
-        s = env.reset()
+        s = env.reset()    #从环境获取初始的状态量等
         ep_r = 0.
         for j in range(MAX_EP_STEPS):    # 单局步数
             env.render()
 
-            a = rl.choose_action(s)
+            a = rl.choose_action(s)  #根据当前状态选择一个动作
 
-            s_, r, done = env.step(a)
+            s_, r, done = env.step(a)  #根据动作更新环境，更新界面的图形    返回更新后的    状态和奖励值，done代表是否到达了目标点，完成任务
 
             rl.store_transition(s, a, r, s_)
 
@@ -54,7 +50,7 @@ def train():
     rl.save()
 
 
-def eval():
+def eval():  #读取图   并绘制图形
     rl.restore()
     env.render()
     env.viewer.set_vsync(True)
