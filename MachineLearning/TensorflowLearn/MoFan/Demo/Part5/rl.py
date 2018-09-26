@@ -63,7 +63,7 @@ class DDPG(object):
     def learn(self):
         # soft target replacement
         self.sess.run(self.soft_replace)
-
+        
         indices = np.random.choice(MEMORY_CAPACITY, size=BATCH_SIZE)
         bt = self.memory[indices, :]
         bs = bt[:, :self.s_dim]
