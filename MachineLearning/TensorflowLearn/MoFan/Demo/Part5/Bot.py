@@ -23,9 +23,6 @@ class Bot(object):
         px, py = self.position
         tx, ty = self.target
         angle = atan2(ty - py, tx - px)  #这里写避碰算法
-        
-        #do action and compute bots position
-        
         # 判断是否到达目的地，到达 奖励 
         if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度
             self.target = self.set_target()
@@ -34,6 +31,7 @@ class Bot(object):
         #边界判断，一个边界进入，另一个边界出来    ===  新公式，取余计算
         px %= 400
         py %= 400
+        self.direction = angle
         self.direction %= 2 * pi
         
         #  前进并计入历史轨迹

@@ -17,29 +17,26 @@ class Player(object):
         self.history = deque(maxlen = 64) #历史轨迹点
     
     #本对象向前一步走，同时更新其他内容
-    def update(self, bots, action):  #传入全局bots，后面可以获取周边环境
+    def update(self, action, dt):  #传入全局bots，后面可以获取周边环境
         
         px, py = self.position
         tx, ty = self.target
         angle = atan2(ty - py, tx - px)  #这里写避碰算法
         
-        #do action and compute bots position
-        
-        # 判断是否到达目的地，到达 奖励 
-        if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度
-            self.target = self.set_target()
-            self.speed = random.random() * 5 + 0.1;
-        
-        #边界判断，一个边界进入，另一个边界出来    ===  新公式，取余计算
         px %= 400
         py %= 400
         self.direction %= 2 * pi
-        #  前进并计入历史轨迹
-        self.position = (px + cos(self.direction) * self.speed, py + sin(self.direction) * self.speed)
         
+        self.speed += action[0] * dt
+        self.direction += action[1] * dt
+        self.speed %= 20
+        self.direction %= 2 * pi
+        
+        self.position = (px + cos(self.direction) * self.speed, py + sin(self.direction) * self.speed)
         if random.random() > 0.7:
             self.history.append(self.position)
         
+    
     def reset(self):
         # self.position = (random.random() * 400, random.random() * 400)
         self.speed = random.random() * 5 + 1
@@ -48,6 +45,10 @@ class Player(object):
         self.target = (random.random() * 400, random.random() * 400)
         self.history = deque(maxlen = 64) #历史轨迹点
     
+    def dis_with_target(self):
+        px, py = self.position
+        tx, ty = self.target
+        return hypot(tx - px, ty - py)
     
     
     

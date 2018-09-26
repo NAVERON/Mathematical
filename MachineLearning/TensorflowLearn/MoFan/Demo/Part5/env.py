@@ -11,201 +11,156 @@ from MoFan.Demo.Part5.Player import Player
 
 
 class ArmEnv(object):
-    viewer = None
-    dt = .1    # refresh rate  刷新率   转动的速度和dt有关
-    action_bound = [-1, 1]
-    goal = {'x': 100., 'y': 100., 'l': 40}  #目标地点
-    state_dim = 9  #状态维度  观测值
-    action_dim = 2  #动作维度
     ##########################################################
     viewer = None
     dt = .1
-    action_bound = [0, 2 * pi]
+    action_bound = [-2 * pi, 2 * pi]
     state_dim = 9  #状态维度  观测值
     action_dim = 2  #动作维度     ------- 例子中是两个手臂的角度，这里是速度大小和方向
-    goal = {"x" : 400, "y" : 50}
     
     def __init__(self):  #初始化基础数据
-        self.arm_info = np.zeros(    # 2 行  2 列
-                2, dtype=[('l', np.float32), ('r', np.float32)]
-            )
-        self.arm_info['l'] = 100        # 2 arms length
-        self.arm_info['r'] = np.pi/6    # 2 angles information  30 degree
-        self.on_goal = 0   #判断手臂端口  在蓝色目标快停留了多长时间
         #########################################################################
         #  初始化界面避碰信息
         self.player = Player((random.random() * 400, random.random() * 400), random.random() * 5 + 1, random.random() * 2 * pi)
         self.bots = []
         for _ in range(random.randint(0, 20)):
             position = (random.random() * 200, random.random() * 200)
-            bot = Bot(position, random.random() * 5 + 0.1, random.random() * 2 * pi)
+            bot = Bot(position, random.random() * 5 + 1, random.random() * 2 * pi)
             self.bots.append(bot)
         
-        # self.goal = {"x" : 400, "y" : 50}
         self.on_goal = 0
         
 
-    def step(self, action):    #action是一个二维数组，表示手臂的旋转角度 =========================================================
-        done = False
-        action = np.clip(action, *self.action_bound)   #把输入控制在边界
-        self.arm_info['r'] += action * self.dt
-        self.arm_info['r'] %= np.pi * 2    # normalize
-
-        (a1l, a2l) = self.arm_info['l']  # radius, arm length
-        (a1r, a2r) = self.arm_info['r']  # radian, angle
-        a1xy = np.array([200., 200.])    # a1 start (x0, y0)      这里需要搞清楚角度是以什么为基准的
-        a1xy_ = np.array([np.cos(a1r), np.sin(a1r)]) * a1l + a1xy  # a1 end and a2 start (x1, y1)
-        finger = np.array([np.cos(a1r + a2r), np.sin(a1r + a2r)]) * a2l + a1xy_  # a2 end (x2, y2)
-        # normalize features
-        dist1 = [(self.goal['x'] - a1xy_[0]) / 400, (self.goal['y'] - a1xy_[1]) / 400]
-        dist2 = [(self.goal['x'] - finger[0]) / 400, (self.goal['y'] - finger[1]) / 400]
-        r = -np.sqrt(dist2[0]**2+dist2[1]**2)    #这个可以表示第二根手臂的长度计算值
-        
-        # done and reward
-        if self.goal['x'] - 40/2 < finger[0] < self.goal['x'] + 40/2:
-            if self.goal['y'] - 40/2 < finger[1] < self.goal['y'] + 40/2:
-                r += 1.
-                self.on_goal += 1
-                if self.on_goal > 50:   #达到目标地的次数50为一个回合，在目标点稳定一定时间
-                    done = True
-        else:
-            self.on_goal = 0
-
-        # state   状态标记是与动作相关的状态
-        s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))    #状态记录
-        return s, r, done    #done表示本次回合是否结束
-        
+    def step(self, action):    #action是一个二维数组，表示手臂的旋转角度 ===================================================
         ################################################################################
         done = False
         action = np.clip(action, *self.action_bound)
+        self.player.update(action, self.dt)   # 根据动作更新自身的属性
+        dis = self.player.dis_with_target()
+        r = -dis
         
-        self.arm_info['r'] += action * self.dt
-        self.arm_info['r'] %= np.pi * 2    # normalize
-        self.player[""]
+        for bot in self.bots:
+            pass
         
-        (a1l, a2l) = self.arm_info['l']  # radius, arm length
-        (a1r, a2r) = self.arm_info['r']  # radian, angle
-        a1xy = np.array([200., 200.])    # a1 start (x0, y0)      这里需要搞清楚角度是以什么为基准的
-        a1xy_ = np.array([np.cos(a1r), np.sin(a1r)]) * a1l + a1xy  # a1 end and a2 start (x1, y1)
-        finger = np.array([np.cos(a1r + a2r), np.sin(a1r + a2r)]) * a2l + a1xy_  # a2 end (x2, y2)
-        # normalize features
-        dist1 = [(self.goal['x'] - a1xy_[0]) / 400, (self.goal['y'] - a1xy_[1]) / 400]
-        dist2 = [(self.goal['x'] - finger[0]) / 400, (self.goal['y'] - finger[1]) / 400]
-        r = -np.sqrt(dist2[0]**2+dist2[1]**2)    #这个可以表示第二根手臂的长度计算值
-        
-        # done and reward
-        if self.goal['x'] - self.goal['l']/2 < finger[0] < self.goal['x'] + self.goal['l']/2:
-            if self.goal['y'] - self.goal['l']/2 < finger[1] < self.goal['y'] + self.goal['l']/2:
-                r += 1.
-                self.on_goal += 1
-                if self.on_goal > 50:   #达到目标地的次数50为一个回合，在目标点稳定一定时间
-                    done = True
+        px, py = self.player.position
+        tx, ty = self.player.target
+        if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度，这里的判断还需要判断
+            r += 1
+            self.on_goal += 1
+            if self.on_goal > 50:
+                done = True
+                self.player.target = (random.random() * 400, random.random() * 400)
         else:
             self.on_goal = 0
-
+        
+        dis = self.player.dis_with_target()
+        near = []           # 这个引用还没哟用到
+        near_count = 0
+        for bot in self.bots:
+            tx, ty = bot.position
+            if hypot(px - tx, py - ty) < 100:   # 如果附近有其他障碍物，则添加进去
+                near_count += 1
+                near.append(bot)
         # state   状态标记是与动作相关的状态
-        s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))    #状态记录
+        s = np.concatenate(           #  记录是9个记录
+            (self.player.position,
+             self.player.target,
+             self.player.speed,
+             self.player.direction,
+             dis,
+             near_count,
+             [1. if self.on_goal else 0.]
+            )
+        )    #状态记录
         return s, r, done    #done表示本次回合是否结束
-    
-    
-    
 
     def reset(self):
-        self.arm_info['r'] = 2 * np.pi * np.random.rand(2)   #随机生成两个手臂的角度
-        self.on_goal = 0
-        (a1l, a2l) = self.arm_info['l']  # radius, arm length
-        (a1r, a2r) = self.arm_info['r']  # radian, angle
-        a1xy = np.array([200., 200.])  # a1 start (x0, y0)
-        a1xy_ = np.array([np.cos(a1r), np.sin(a1r)]) * a1l + a1xy  # a1 end and a2 start (x1, y1)
-        finger = np.array([np.cos(a1r + a2r), np.sin(a1r + a2r)]) * a2l + a1xy_  # a2 end (x2, y2)
-        # normalize features
-        dist1 = [(self.goal['x'] - a1xy_[0])/400, (self.goal['y'] - a1xy_[1])/400]
-        dist2 = [(self.goal['x'] - finger[0])/400, (self.goal['y'] - finger[1])/400]
-        # state
-        s = np.concatenate((a1xy_/200, finger/200, dist1 + dist2, [1. if self.on_goal else 0.]))
-        return s    #  返回状态
         ##############################################################################
-        #
         self.player.reset()
+        self.bots.clear()
+        for _ in range(random.randint(0, 20)):
+            position = (random.random() * 200, random.random() * 200)
+            bot = Bot(position, random.random() * 5 + 1, random.random() * 2 * pi)
+            self.bots.append(bot)
+        self.on_goal = 0
+        dis = self.player.dis_with_target()
         
+        px, py = self.player.position
+        near = []           # 这个引用还没哟用到
+        near_count = 0
+        for bot in self.bots:
+            tx, ty = bot.position
+            if hypot(px - tx, py - ty) < 100:   # 如果附近有其他障碍物，则添加进去
+                near_count += 1
+                near.append(bot)
         
+        # 计算当前状态
+        s = np.concatenate(            # 9 demintion
+            (self.player.position,
+             self.player.target,
+             self.player.speed,
+             self.player.direction,
+             dis,
+             near_count,
+             [1. if self.on_goal else 0.]
+             )
+        )
+        return s    #  返回状态
         
-        
-
     def render(self):
         if self.viewer is None:
-            self.viewer = Viewer(self.arm_info, self.player, self.goal, self.bots)
+            self.viewer = Viewer(self.player, self.bots)
         self.viewer.render()
 
     def sample_action(self):
-        return np.random.rand(2)-0.5    # two radians   范围在-0.5 - 0.5之间
-        
-        return np.random.rand(2)
+        return np.random.rand(2) * 2 + 0.1
 
 
 class Viewer(pyglet.window.Window):
     bar_thc = 5  #手臂的宽度
     
-    def __init__(self, arm_info, player, goal, bots):  #画出手臂
+    def __init__(self, player, bots):  #画出手臂
         # vsync=False to not use the monitor FPS, we can speed up training
+        ##################################################################################
         super(Viewer, self).__init__(width=400, height=400, resizable=False, caption='Arm', vsync=False)
         pyglet.gl.glClearColor(1, 1, 1, 1)  #背景颜色
-        self.arm_info = arm_info
-        self.center_coord = np.array([200, 200])
-        
-        self.batch = pyglet.graphics.Batch()    # display whole batch at once
-        self.goal = self.batch.add(
-                4, pyglet.gl.GL_QUADS, None,    # 4 corners
-                ('v2f', [goal['x'] - 40 / 2, goal['y'] - 40 / 2,                # location
-                         goal['x'] - 40 / 2, goal['y'] + 40 / 2,
-                         goal['x'] + 40 / 2, goal['y'] + 40 / 2,
-                         goal['x'] + 40 / 2, goal['y'] - 40 / 2]),
-                ('c3B', (86, 109, 249) * 4)
-            )
-        self.arm1 = self.batch.add(
-            4, pyglet.gl.GL_QUADS, None,
-            ('v2f', [250, 250,                # location
-                     250, 300,
-                     260, 300,
-                     260, 250]),
-            ('c3B', (249, 86, 86) * 4,))    # color
-        self.arm2 = self.batch.add(
-            4, pyglet.gl.GL_QUADS, None,
-            ('v2f', [100, 150,              # location
-                     100, 160,
-                     200, 160,
-                     200, 150]), 
-            ('c3B', (249, 86, 86) * 4,))
-        
-        ##################################################################################
-        #  自己修改的地方
-        #super(Viewer, self).__init__(width=400, height=400, resizable=False, caption='Arm', vsync=False)
-        #pyglet.gl.glClearColor(1, 1, 1, 1)  #背景颜色
         self.player = player
+        self.bots = bots
+        
         self.batch = pyglet.graphics.Batch()
-        self.goal = self.batch.add(
+        px, py = self.player.position
+        self.player_draw = self.batch.add(
                 4, pyglet.gl.GL_QUADS, None,    # 4 corners
-                ('v2f', [goal['x'] - 40 / 2, goal['y'] - 40 / 2,                # location
-                         goal['x'] - 40 / 2, goal['y'] + 40 / 2,
-                         goal['x'] + 40 / 2, goal['y'] + 40 / 2,
-                         goal['x'] + 40 / 2, goal['y'] - 40 / 2]),
+                ('v2f', [ px - 10, py - 10,                # location
+                         px - 10, py + 10,
+                         px + 10, py + 10,
+                         px + 10, py - 10
+                         ]
+                ),
                 ('c3B', (86, 109, 249) * 4)
             )
-        self.arm1 = self.batch.add(
-            4, pyglet.gl.GL_QUADS, None,
-            ('v2f', [250, 250,                # location
-                     250, 300,
-                     260, 300,
-                     260, 250]),
-            ('c3B', (249, 86, 86) * 4,))    # color
-        self.arm2 = self.batch.add(
-            4, pyglet.gl.GL_QUADS, None,
-            ('v2f', [100, 150,              # location
-                     100, 160,
-                     200, 160,
-                     200, 150]), 
-            ('c3B', (249, 86, 86) * 4,))
-        
+        tx, ty = self.player.target
+        self.goal = self.batch.add(
+                4, pyglet.gl.GL_QUADS, None,    # 4 corners
+                ('v2f', [tx - 10, ty - 10,                # location
+                         tx - 10, ty + 10,
+                         tx + 10, ty + 10,
+                         tx + 10, ty - 10
+                         ]
+                ),
+                ('c3B', (86, 109, 249) * 4)
+            )
+        for bot in self.bots:
+            bx, by = bot.position
+            self.batch.add(
+                    4, pyglet.gl.GL_QUADS, None,
+                    ('v2f', [bx - 10, by - 10,  # location
+                         bx - 10, by + 10,
+                         bx + 10, by + 10,
+                         bx - 10, by - 10]
+                    ),
+                    ('c3B', (249, 86, 86) * 4)
+                )
         
 
     def render(self):  #刷新并呈现在屏幕上
@@ -240,9 +195,18 @@ class Viewer(pyglet.window.Window):
         self.arm1.vertices = np.concatenate((xy01, xy02, xy11, xy12))  #更新矩形的信息
         self.arm2.vertices = np.concatenate((xy11_, xy12_, xy21, xy22))
         ###########################################################################
-        # 更新界面上所有障碍物，更新player的属性
+        #更新player本身，并且重新放入batch进行更新绘制
+        px, py = self.player.position
+        near = []           # 这个引用还没哟用到
+        near_count = 0
+        for bot in self.bots:
+            tx, ty = bot.position
+            if hypot(px - tx, py - ty) < 100:   # 如果附近有其他障碍物，则添加进去
+                near_count += 1
+                near.append(bot)
         
-
+        self.player_draw.vertices = np.concatenate()
+        
 
 if __name__ == '__main__':
     env = ArmEnv()
