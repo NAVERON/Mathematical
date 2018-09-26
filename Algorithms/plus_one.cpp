@@ -7,6 +7,7 @@
 
 class Solution
 {
+    //题目要求：给定一个数组表示的数字，在这个数字上加一，求取结果   难点在于加一后进位的运算
     public:
     vector<int> plusOne(vector<int> digits)
     {
