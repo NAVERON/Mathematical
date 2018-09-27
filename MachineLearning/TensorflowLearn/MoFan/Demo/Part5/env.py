@@ -1,13 +1,13 @@
 
 
-
-
 import numpy as np
 import pyglet
 import random
 from math import sin, cos, atan2, pi, hypot
 from MoFan.Demo.Part5.Bot import Bot
 from MoFan.Demo.Part5.Player import Player
+import time
+
 
 
 class ArmEnv(object):
@@ -43,12 +43,18 @@ class ArmEnv(object):
         
         px, py = self.player.position
         tx, ty = self.player.target
-        if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度，这里的判断还需要判断
+        if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度，这里的判断还需要判断====过程中遇到障碍物则需要惩罚
+            print("到达目标点，奖励 r")
             r += 1
             self.on_goal += 1
-            if self.on_goal > 50:
-                done = True
-                self.player.target = (random.random() * 400, random.random() * 400)
+            
+            done = True
+            self.player.target = (random.random() * 400, random.random() * 400)
+            
+#             if self.on_goal > 50:
+#                 print("达到目标50次，重新设置玩家目标点")
+#                 done = True
+#                 self.player.target = (random.random() * 400, random.random() * 400)
         else:
             self.on_goal = 0
         
@@ -71,6 +77,8 @@ class ArmEnv(object):
              [1. if self.on_goal else 0.]
             )
         )    #状态记录
+        time.sleep(0.1)
+        print(s)
         return s, r, done    #done表示本次回合是否结束
 
     def reset(self):
@@ -108,12 +116,11 @@ class ArmEnv(object):
         
     def render(self):
         if self.viewer is None:
-            print("初始化可视化")
             self.viewer = Viewer(self.player, self.bots)
         self.viewer.render()
 
     def sample_action(self):
-        return np.random.rand(2)
+        return np.random.rand(2) - 0.5
 
 
 class Viewer(pyglet.window.Window):
