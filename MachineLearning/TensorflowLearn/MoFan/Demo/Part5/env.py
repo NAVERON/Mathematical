@@ -15,7 +15,7 @@ class ArmEnv(object):
     viewer = None
     dt = .1
     action_bound = [-1, 1]
-    state_dim = 10  #状态维度  观测值
+    state_dim = 9  #状态维度  观测值
     action_dim = 2  #动作维度     ------- 例子中是两个手臂的角度，这里是速度大小和方向
     
     def __init__(self):  #初始化基础数据
@@ -108,6 +108,7 @@ class ArmEnv(object):
         
     def render(self):
         if self.viewer is None:
+            print("初始化可视化")
             self.viewer = Viewer(self.player, self.bots)
         self.viewer.render()
 
