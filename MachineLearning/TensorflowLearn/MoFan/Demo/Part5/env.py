@@ -43,8 +43,9 @@ class ArmEnv(object):
         
         px, py = self.player.position
         tx, ty = self.player.target
+        #  这里以后需要修改成试过让清 判断，如果驶过则继续判断是否到达终点，到达则完成一个回合
         if hypot(tx - px, ty - py) < 10:  #如果达到目的地，重新设置目标和速度，这里的判断还需要判断====过程中遇到障碍物则需要惩罚
-            print("到达目标点，奖励 r")
+            print("到达目标点，奖励 r", r)
             r += 1
             self.on_goal += 1
             
@@ -58,7 +59,6 @@ class ArmEnv(object):
         else:
             self.on_goal = 0
         
-        dis = self.player.dis_with_target()
         near = []           # 这个引用还没用到
         near_count = 0
         for bot in self.bots:
@@ -67,8 +67,6 @@ class ArmEnv(object):
                 near_count += 1
                 near.append(bot)
         # state   状态标记是与动作相关的状态
-        px, py = self.player.position
-        tx, ty = self.player.target
         s = np.concatenate(           #  记录是9个记录
             ([px, py],
              [tx, ty],
@@ -77,8 +75,8 @@ class ArmEnv(object):
              [1. if self.on_goal else 0.]
             )
         )    #状态记录
-        time.sleep(0.1)
-        print(s)
+        time.sleep(0.01)
+        
         return s, r, done    #done表示本次回合是否结束
 
     def reset(self):
@@ -120,7 +118,7 @@ class ArmEnv(object):
         self.viewer.render()
 
     def sample_action(self):
-        return np.random.rand(2) - 0.5
+        return np.random.rand(2) - [0.5, 0.5]
 
 
 class Viewer(pyglet.window.Window):

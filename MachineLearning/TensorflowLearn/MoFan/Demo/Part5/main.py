@@ -11,7 +11,7 @@ from MoFan.Demo.Part5.env import ArmEnv
 from MoFan.Demo.Part5.rl import DDPG
 
 MAX_EPISODES = 500
-MAX_EP_STEPS = 200
+MAX_EP_STEPS = 1000
 ON_TRAIN = True
 
 # set env
@@ -31,7 +31,6 @@ def train():
         ep_r = 0.
         for j in range(MAX_EP_STEPS):    # 单局步数
             env.render()
-
             a = rl.choose_action(s)  #根据当前状态选择一个动作
 
             s_, r, done = env.step(a)  #根据动作更新环境，更新界面的图形    返回更新后的    状态和奖励值，done代表是否到达了目标点，完成任务

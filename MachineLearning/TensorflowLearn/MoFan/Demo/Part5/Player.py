@@ -21,7 +21,6 @@ class Player(object):
         
         px, py = self.position
         tx, ty = self.target
-        angle = atan2(ty - py, tx - px)  #这里写避碰算法
         
         px %= 400
         py %= 400
@@ -29,7 +28,7 @@ class Player(object):
         
         self.speed += action[0] * dt
         self.direction += action[1] * dt
-        self.speed %= 20
+        self.speed %= 10
         self.direction %= 2 * pi
         
         self.position = (px + cos(self.direction) * self.speed, py + sin(self.direction) * self.speed)
