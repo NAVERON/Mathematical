@@ -31,7 +31,7 @@ MAZE_W = 4  # grid width
 class Maze(tk.Tk, object):
     def __init__(self):
         super(Maze, self).__init__()
-        self.action_space = ['u', 'd', 'l', 'r']
+        self.action_space = ['u', 'd', 'l', 'r']   #上下左右四个动作
         self.n_actions = len(self.action_space)
         self.n_features = 2
         self.title('maze')
