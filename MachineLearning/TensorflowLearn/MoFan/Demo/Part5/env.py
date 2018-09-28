@@ -68,10 +68,10 @@ class ArmEnv(object):
                 near.append(bot)
         # state   状态标记是与动作相关的状态
         s = np.concatenate(           #  记录是9个记录
-            ([px, py],
-             [tx, ty],
-             [self.player.speed, self.player.direction],
-             [dis, near_count],
+            ([px/400, py/400],
+             [tx/400, ty/400],
+             [self.player.speed/6, self.player.direction/2*pi],
+             [dis/1000, near_count/20],
              [1. if self.on_goal else 0.]
             )
         )    #状态记录
@@ -103,10 +103,10 @@ class ArmEnv(object):
         px, py = self.player.position
         tx, ty = self.player.target
         s = np.concatenate(
-            ([px, py],
-             [tx, ty],
-             [self.player.speed, self.player.direction],
-             [dis, near_count],
+            ([px/400, py/400],
+             [tx/400, ty/400],
+             [self.player.speed/6, self.player.direction/2*pi],
+             [dis/1000, near_count/20],
              [1. if self.on_goal else 0.]
             )
         )
