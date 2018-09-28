@@ -18,14 +18,17 @@ import time
 # import sys
 import tkinter as tk
 
+import random
+from math import pi
+
 # if sys.version_info.major == 2:
 #     import Tkinter as tk
 # else:
 #     import tkinter as tk
 
 UNIT = 40   # pixels
-MAZE_H = 4  # grid height
-MAZE_W = 4  # grid width
+MAZE_H = 15  # grid height
+MAZE_W = 15  # grid width
 
 
 class Maze(tk.Tk, object):
@@ -37,6 +40,12 @@ class Maze(tk.Tk, object):
         self.title('maze')
         self.geometry('{0}x{1}'.format(MAZE_H * UNIT, MAZE_H * UNIT))
         self._build_maze()
+        
+        # 表征  被训练对象的属性
+        self.position = (random.random() * MAZE_W * UNIT, random.random() * MAZE_H * UNIT)
+        self.speed = random.random() * 5 + 1
+        self.direction = random.random() * 2 * pi
+        
 
     def _build_maze(self):
         self.canvas = tk.Canvas(self, bg='white',
@@ -85,7 +94,7 @@ class Maze(tk.Tk, object):
 
     def reset(self):
         self.update()
-        time.sleep(0.1)
+        time.sleep(1)
         self.canvas.delete(self.rect)
         origin = np.array([20, 20])
         self.rect = self.canvas.create_rectangle(
@@ -126,6 +135,7 @@ class Maze(tk.Tk, object):
             reward = 0
             done = False
         s_ = (np.array(next_coords[:2]) - np.array(self.canvas.coords(self.oval)[:2]))/(MAZE_H*UNIT)
+        time.sleep(1)
         return s_, reward, done
 
     def render(self):
