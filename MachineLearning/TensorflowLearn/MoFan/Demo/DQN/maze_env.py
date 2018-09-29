@@ -13,6 +13,8 @@ The RL is in RL_brain.py.
 
 View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 """
+
+
 import numpy as np
 import time
 # import sys
@@ -41,7 +43,7 @@ class Maze(tk.Tk, object):
         self.geometry('{0}x{1}'.format(MAZE_H * UNIT, MAZE_H * UNIT))
         
         self.enemys = []
-        for _ in range(10):
+        for _ in range(5):
             position = [random.randint(0, MAZE_W)*UNIT + 20, random.randint(0, MAZE_H)*UNIT + 20]
             self.enemys.append(position)
         
@@ -108,7 +110,7 @@ class Maze(tk.Tk, object):
             fill='red')
         
         self.enemys.clear()
-        for _ in range(10):
+        for _ in range(5):
             position = [random.randint(0, MAZE_W)*UNIT + 20, random.randint(0, MAZE_H)*UNIT + 20]
             self.enemys.append(position)
         # return observation     归一化 0 - 1
@@ -143,17 +145,16 @@ class Maze(tk.Tk, object):
             p = self.canvas.coords(enemy_draw)
             
             option = random.randint(0, 3)
-            print("optin action", option)
             if option == 0:  # up
                 if p[1] > UNIT:
                     enemy_option[1] -= UNIT
-            elif action == 1:   # down
+            elif option == 1:   # down
                 if p[1] < (MAZE_H - 1) * UNIT:
                     enemy_option[1] += UNIT
-            elif action == 2:   # right
+            elif option == 2:   # right
                 if p[0] < (MAZE_W - 1) * UNIT:
                     enemy_option[0] += UNIT
-            elif action == 3:   # left
+            elif option == 3:   # left
                 if p[0] > UNIT:
                     enemy_option[0] -= UNIT
             
