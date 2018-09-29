@@ -185,7 +185,7 @@ class Maze(tk.Tk, object):
             done = False
         
         s_ = (np.array(next_coords[:2]) - np.array(self.canvas.coords(self.destination)[:2]))/(MAZE_H*UNIT)
-        time.sleep(0.1)
+        time.sleep(0.01)
         return s_, reward, done
 
     def render(self):

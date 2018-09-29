@@ -13,7 +13,7 @@ def run_maze():
         while True:
             # fresh env
             env.render()
-
+            
             # RL choose action based on observation
             action = RL.choose_action(observation)
 
