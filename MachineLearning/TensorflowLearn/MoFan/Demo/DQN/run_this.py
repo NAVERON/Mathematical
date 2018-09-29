@@ -9,7 +9,7 @@ def run_maze():
     for episode in range(300):
         # initial observation
         observation = env.reset()
-
+        
         while True:
             # fresh env
             env.render()
