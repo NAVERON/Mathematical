@@ -11,6 +11,7 @@ numpy >= 1.12.1
 """
 import numpy as np
 import pyglet
+import time
 
 
 pyglet.clock.set_fps_limit(10000)
@@ -21,9 +22,9 @@ class CarEnv(object):
     action_dim = 1
     state_dim = n_sensor
     viewer = None
-    viewer_xy = (500, 500)
+    viewer_xy = (500, 500)    #窗口宽高
     sensor_max = 150.
-    start_point = [450, 300]
+    start_point = [450, 300]   #小车初始位置
     speed = 50.
     dt = 0.1
 
@@ -37,7 +38,7 @@ class CarEnv(object):
         self.terminal = False
         # node1 (x, y, r, w, l),
         self.car_info = np.array([0, 0, 0, 20, 40], dtype=np.float64)   # car coordination
-        self.obstacle_coords = np.array([
+        self.obstacle_coords = np.array([   #障碍物位置
             [120, 120],
             [380, 120],
             [380, 380],
@@ -51,12 +52,12 @@ class CarEnv(object):
         else:
             action = np.clip(action, *self.action_bound)[0]
         self.car_info[2] += action * np.pi/30  # max r = 6 degree
-        self.car_info[:2] = self.car_info[:2] + \
-                            self.speed * self.dt * np.array([np.cos(self.car_info[2]), np.sin(self.car_info[2])])
+        self.car_info[:2] = self.car_info[:2] + self.speed * self.dt * np.array([np.cos(self.car_info[2]), np.sin(self.car_info[2])])
 
         self._update_sensor()
         s = self._get_state()
         r = -1 if self.terminal else 0
+        time.sleep(0.1)
         return s, r, self.terminal
 
     def reset(self):
