@@ -57,7 +57,7 @@ class CarEnv(object):
         self._update_sensor()
         s = self._get_state()
         r = -1 if self.terminal else 0
-        time.sleep(0.1)
+        time.sleep(0.001)
         return s, r, self.terminal
 
     def reset(self):
