@@ -248,7 +248,7 @@ $$
 
 # 间距问题
 
-![公式样式美观度分析图片](./pic/Ashampoo_Snap_2017.07.04_16h16m08s_001_.png)
+![公式样式美观度分析图片](../pic/Ashampoo_Snap_2017.07.04_16h16m08s_001_.png)
 
 图片中显示了一些由于间距造成的美观问题
 在使用`|`时应当替换成`\mid`，可以使得间距变大
@@ -444,8 +444,8 @@ $ \lim \limits_{x \to 1} \frac{x^2 - 1}{x-1} $
 
 # 绝对值与泛数
 
-一些值得绝对值可以表示(denoted)为`\lvert x \rvert `，更通常的，`
-\left \lvert ... \right \rvert `
+一些值得绝对值可以表示(denoted)为`\lvert x \rvert `，更通常的，
+`\left \lvert ... \right\rvert`
 
 ```
 |x|, ||v||
