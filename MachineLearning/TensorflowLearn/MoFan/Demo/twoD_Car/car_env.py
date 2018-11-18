@@ -27,7 +27,7 @@ class CarEnv(object):
     start_point = [450, 300]   #小车初始位置
     speed = 50.
     dt = 0.1
-
+    
     def __init__(self, discrete_action=False):
         self.is_discrete_action = discrete_action
         if discrete_action:
@@ -93,7 +93,7 @@ class CarEnv(object):
         xs = cx + (np.zeros((n_sensors, ))+self.sensor_max) * np.cos(sensor_theta)
         ys = cy + (np.zeros((n_sensors, ))+self.sensor_max) * np.sin(sensor_theta)
         xys = np.array([[x, y] for x, y in zip(xs, ys)])    # shape (5 sensors, 2)
-
+        
         # sensors
         tmp_x = xys[:, 0] - cx
         tmp_y = xys[:, 1] - cy
