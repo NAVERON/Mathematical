@@ -48,7 +48,7 @@ class CarEnv(object):
 
     def step(self, action):
         if self.is_discrete_action:
-            action = self.actions[action]
+            action = self.actions[action]   # 只能让小车向左或者向右转向
         else:
             action = np.clip(action, *self.action_bound)[0]
         self.car_info[2] += action * np.pi/30  # max r = 6 degree
@@ -120,7 +120,7 @@ class CarEnv(object):
                         intersection = q + u * s
                         possible_intersections.append(intersection)
                         possible_sensor_distance.append(np.linalg.norm(u*s))
-
+            
             # window collision
             win_coord = np.array([
                 [0, 0],
