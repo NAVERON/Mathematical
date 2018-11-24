@@ -20,6 +20,7 @@ import numpy as np
 import os
 import shutil
 from MoFan.Demo.twoD_Car.car_env import CarEnv
+import time
 
 
 np.random.seed(1)

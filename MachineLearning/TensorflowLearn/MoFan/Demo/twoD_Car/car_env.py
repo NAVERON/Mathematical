@@ -18,11 +18,11 @@ pyglet.clock.set_fps_limit(10000)
 
 
 class CarEnv(object):
-    n_sensor = 5
+    n_sensor = 5     # 方向有5中选择
     action_dim = 1
     state_dim = n_sensor
     viewer = None
-    viewer_xy = (500, 500)    #窗口宽高
+    viewer_xy = (1000, 800)    #窗口宽高
     sensor_max = 150.
     start_point = [450, 300]   #小车初始位置
     speed = 50.
