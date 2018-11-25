@@ -18,13 +18,13 @@ pyglet.clock.set_fps_limit(10000)
 
 
 class CarEnv(object):
-    n_sensor = 5     # 方向有5中选择
+    n_sensor = 5  # 5个探测方向
     action_dim = 1
     state_dim = n_sensor
     viewer = None
-    viewer_xy = (1000, 800)    #窗口宽高
-    sensor_max = 150.
-    start_point = [450, 300]   #小车初始位置
+    viewer_xy = (1000, 600)    #窗口宽高
+    sensor_max = 50.
+    start_point = [500, 300]   #小车初始位置
     speed = 50.
     dt = 0.1
     
@@ -34,41 +34,47 @@ class CarEnv(object):
             self.actions = [-1, 0, 1]
         else:
             self.action_bound = [-1, 1]
-
+        
         self.terminal = False
         # node1 (x, y, r, w, l),
-        self.car_info = np.array([0, 0, 0, 20, 40], dtype=np.float64)   # car coordination
-        self.obstacle_coords = np.array([   #障碍物位置################################################################
-            [120, 120],
-            [380, 120],
-            [380, 380],
-            [120, 380],
-        ])
+        self.car_info = np.array([0, 0, 0, 10, 20], dtype=np.float64)   # car coordination  // 前两个位置xy，3: 角度， 最后 长宽
+        self.obstacle_list = []
+        for _ in range(15):
+            x = np.random.choice(list(range(900)))
+            y = np.random.choice(list(range(500)))
+            temp_coords = np.array([   #障碍物位置################################################################
+                [x, y],
+                [x+80, y],
+                [x+80, y+80],
+                [x, y+80],
+            ])
+            self.obstacle_list.append(temp_coords)
+        
         self.sensor_info = self.sensor_max + np.zeros((self.n_sensor, 3))  # n sensors, (distance, end_x, end_y)
-
+    
     def step(self, action):
-        if self.is_discrete_action:
+        if self.is_discrete_action:  # 是不是离散动作？
             action = self.actions[action]   # 只能让小车向左或者向右转向
         else:
             action = np.clip(action, *self.action_bound)[0]
-        self.car_info[2] += action * np.pi/30  # max r = 6 degree
+        self.car_info[2] += action * np.pi/30  # max r = 6 degree  ===  每次动作向左或向右变化6度
         self.car_info[:2] = self.car_info[:2] + self.speed * self.dt * np.array([np.cos(self.car_info[2]), np.sin(self.car_info[2])])
-
+        
         self._update_sensor()
         s = self._get_state()
         r = -1 if self.terminal else 0
         time.sleep(0.001)
         return s, r, self.terminal
-
+    
     def reset(self):
         self.terminal = False
-        self.car_info[:3] = np.array([*self.start_point, -np.pi/2])
+        self.car_info[:3] = np.array([*self.start_point, -np.pi])
         self._update_sensor()
         return self._get_state()
 
     def render(self):    ############################################################################################
         if self.viewer is None:
-            self.viewer = Viewer(*self.viewer_xy, self.car_info, self.sensor_info, self.obstacle_coords)
+            self.viewer = Viewer(*self.viewer_xy, self.car_info, self.sensor_info, self.obstacle_list)
         self.viewer.render()
 
     def sample_action(self):
@@ -77,10 +83,10 @@ class CarEnv(object):
         else:
             a = np.random.uniform(*self.action_bound, size=self.action_dim)
         return a
-
+    
     def set_fps(self, fps=30):
         pyglet.clock.set_fps_limit(fps)
-
+    
     def _get_state(self):
         s = self.sensor_info[:, 0].flatten()/self.sensor_max
         return s
@@ -110,16 +116,17 @@ class CarEnv(object):
             possible_intersections = [self.sensor_info[si, -2:]]
 
             # obstacle collision
-            for oi in range(len(self.obstacle_coords)):    #########################################################
-                p = self.obstacle_coords[oi]
-                r = self.obstacle_coords[(oi + 1) % len(self.obstacle_coords)] - self.obstacle_coords[oi]
-                if np.cross(r, s) != 0:  # may collision
-                    t = np.cross((q - p), s) / np.cross(r, s)
-                    u = np.cross((q - p), r) / np.cross(r, s)
-                    if 0 <= t <= 1 and 0 <= u <= 1:
-                        intersection = q + u * s
-                        possible_intersections.append(intersection)
-                        possible_sensor_distance.append(np.linalg.norm(u*s))
+            for nano in self.obstacle_list:
+                for oi in range(len(nano)):    #########################################################
+                    p = nano[oi]
+                    r = nano[(oi + 1) % len(nano)] - nano[oi]
+                    if np.cross(r, s) != 0:  # may collision
+                        t = np.cross((q - p), s) / np.cross(r, s)
+                        u = np.cross((q - p), r) / np.cross(r, s)
+                        if 0 <= t <= 1 and 0 <= u <= 1:
+                            intersection = q + u * s
+                            possible_intersections.append(intersection)
+                            possible_sensor_distance.append(np.linalg.norm(u*s))
             
             # window collision
             win_coord = np.array([
@@ -129,16 +136,17 @@ class CarEnv(object):
                 [0, self.viewer_xy[1]],
                 [0, 0],
             ])
-            for oi in range(4):
-                p = win_coord[oi]
-                r = win_coord[(oi + 1) % len(win_coord)] - win_coord[oi]
-                if np.cross(r, s) != 0:  # may collision
-                    t = np.cross((q - p), s) / np.cross(r, s)
-                    u = np.cross((q - p), r) / np.cross(r, s)
-                    if 0 <= t <= 1 and 0 <= u <= 1:
-                        intersection = p + t * r
-                        possible_intersections.append(intersection)
-                        possible_sensor_distance.append(np.linalg.norm(intersection - q))
+            for yona in self.obstacle_list:
+                for oi in range(len(yona)):
+                    p = win_coord[oi]
+                    r = win_coord[(oi + 1) % len(win_coord)] - win_coord[oi]
+                    if np.cross(r, s) != 0:  # may collision
+                        t = np.cross((q - p), s) / np.cross(r, s)
+                        u = np.cross((q - p), r) / np.cross(r, s)
+                        if 0 <= t <= 1 and 0 <= u <= 1:
+                            intersection = p + t * r
+                            possible_intersections.append(intersection)
+                            possible_sensor_distance.append(np.linalg.norm(intersection - q))
 
             distance = np.min(possible_sensor_distance)
             distance_index = np.argmin(possible_sensor_distance)
@@ -155,7 +163,7 @@ class Viewer(pyglet.window.Window):
     fps_display = pyglet.clock.ClockDisplay()
     bar_thc = 5
 
-    def __init__(self, width, height, car_info, sensor_info, obstacle_coords):
+    def __init__(self, width, height, car_info, sensor_info, obstacle_list):
         super(Viewer, self).__init__(width, height, resizable=False, caption='2D car', vsync=False)  # vsync=False to not use the monitor FPS
         self.set_location(x=80, y=10)
         pyglet.gl.glClearColor(*self.color['background'])
@@ -178,7 +186,9 @@ class Viewer(pyglet.window.Window):
         self.car = self.batch.add(4, pyglet.gl.GL_QUADS, foreground, ('v2f', car_box), ('c3B', c))
 
         c = (134, 181, 244) * 4
-        self.obstacle = self.batch.add(4, pyglet.gl.GL_QUADS, background, ('v2f', obstacle_coords.flatten()), ('c3B', c))
+        for item in obstacle_list:
+            self.batch.add(4, pyglet.gl.GL_QUADS, background, ('v2f', item.flatten()), ('c3B', c))
+        # self.obstacle = self.batch.add(4, pyglet.gl.GL_QUADS, background, ('v2f', obstacle_coords.flatten()), ('c3B', c))
 
     def render(self):
         pyglet.clock.tick()
@@ -195,7 +205,7 @@ class Viewer(pyglet.window.Window):
 
     def _update(self):
         cx, cy, r, w, l = self.car_info
-
+        
         # sensors
         for i, sensor in enumerate(self.sensors):
             sensor.vertices = [cx, cy, *self.sensor_info[i, -2:]]
