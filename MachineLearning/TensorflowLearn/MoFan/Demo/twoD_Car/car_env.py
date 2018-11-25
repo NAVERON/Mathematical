@@ -38,7 +38,7 @@ class CarEnv(object):
         self.terminal = False
         # node1 (x, y, r, w, l),
         self.car_info = np.array([0, 0, 0, 20, 40], dtype=np.float64)   # car coordination
-        self.obstacle_coords = np.array([   #障碍物位置
+        self.obstacle_coords = np.array([   #障碍物位置################################################################
             [120, 120],
             [380, 120],
             [380, 380],
@@ -66,7 +66,7 @@ class CarEnv(object):
         self._update_sensor()
         return self._get_state()
 
-    def render(self):
+    def render(self):    ############################################################################################
         if self.viewer is None:
             self.viewer = Viewer(*self.viewer_xy, self.car_info, self.sensor_info, self.obstacle_coords)
         self.viewer.render()
@@ -110,7 +110,7 @@ class CarEnv(object):
             possible_intersections = [self.sensor_info[si, -2:]]
 
             # obstacle collision
-            for oi in range(len(self.obstacle_coords)):
+            for oi in range(len(self.obstacle_coords)):    #########################################################
                 p = self.obstacle_coords[oi]
                 r = self.obstacle_coords[(oi + 1) % len(self.obstacle_coords)] - self.obstacle_coords[oi]
                 if np.cross(r, s) != 0:  # may collision

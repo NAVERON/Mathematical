@@ -38,7 +38,7 @@ BATCH_SIZE = 16
 VAR_MIN = 0.1
 RENDER = True
 LOAD = False
-DISCRETE_ACTION = False
+DISCRETE_ACTION = False   # 是否是分离的动作   不是分离的动作
 
 env = CarEnv(discrete_action=DISCRETE_ACTION)
 STATE_DIM = env.state_dim
